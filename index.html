@@ -13,6 +13,9 @@
     <meta property="og:image" content="https://raw.githubusercontent.com/lyakvidu/personality-quiz/main/vk-preview.png">
     <meta property="og:url" content="https://lyakvidu.github.io/personality-quiz/">
     
+    <!-- VK Ads SDK -->
+    <script src="https://vk.com/js/api/openapi.js?169"></script>
+    
     <style>
         * {
             margin: 0;
@@ -49,7 +52,7 @@
             flex-direction: column;
             overflow-y: auto;
             flex: 1;
-            min-height: 0; /* Важно для корректной работы flex с прокруткой */
+            min-height: 0;
         }
 
         .screen.active {
@@ -178,6 +181,36 @@
             margin-top: 15px;
         }
 
+        /* Рекламный блок */
+        .ad-container {
+            margin: 20px 0;
+            width: 100%;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            min-height: 100px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px dashed #dee2e6;
+            flex-shrink: 0;
+        }
+
+        .ad-container.active {
+            display: flex;
+        }
+
+        .ad-placeholder {
+            color: #6c757d;
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+        }
+
+        #vk_ads {
+            width: 100%;
+            height: 100px;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -234,6 +267,11 @@
                 padding: 16px;
                 font-size: 1.1em;
             }
+            
+            .ad-container {
+                min-height: 80px;
+                margin: 15px 0;
+            }
         }
     </style>
 </head>
@@ -251,6 +289,15 @@
                     <p>• Холерик • Сангвиник • Флегматик • Меланхолик</p>
                 </div>
             </div>
+            
+            <!-- Рекламный блок на главном экране -->
+            <div id="menu-ad" class="ad-container">
+                <div id="vk_ads_menu" class="vk_ad"></div>
+                <div class="ad-placeholder" id="menu-ad-placeholder">
+                    🎯 Рекламный блок<br>
+                    <small>Здесь будет отображаться реклама</small>
+                </div>
+            </div>
         </div>
 
         <div id="question-screen" class="screen">
@@ -266,6 +313,16 @@
         <div id="result-screen" class="screen">
             <h1>Ваш психологический портрет</h1>
             <div id="result-content"></div>
+            
+            <!-- Рекламный блок на экране результатов -->
+            <div id="result-ad" class="ad-container">
+                <div id="vk_ads_result" class="vk_ad"></div>
+                <div class="ad-placeholder" id="result-ad-placeholder">
+                    🎯 Рекламный блок<br>
+                    <small>Здесь будет отображаться реклама</small>
+                </div>
+            </div>
+            
             <div>
                 <button id="share-btn" class="button result-share">📱 Поделиться результатом</button>
                 <button id="restart-btn" class="button result-restart">🔄 Пройти ещё раз</button>
@@ -279,6 +336,7 @@
     <script>
         // ==================== VK MINI APP ИНИЦИАЛИЗАЦИЯ ====================
         let isVK = false;
+        let vkAdsEnabled = false;
         
         // Инициализация VK Bridge
         if (typeof vkBridge !== 'undefined') {
@@ -292,6 +350,9 @@
                 })
                 .then(data => {
                     console.log('Running in VK with params:', data);
+                    
+                    // Показываем рекламные блоки в VK
+                    initVKAds();
                 })
                 .catch(error => {
                     console.log('Not running in VK:', error);
@@ -300,6 +361,51 @@
         } else {
             console.log('VK Bridge not detected, running in standalone mode');
             isVK = false;
+        }
+        
+        // ==================== ИНИЦИАЛИЗАЦИЯ РЕКЛАМЫ VK ====================
+        function initVKAds() {
+            if (!isVK) return;
+            
+            // Включаем рекламные блоки
+            vkAdsEnabled = true;
+            document.getElementById('menu-ad').classList.add('active');
+            document.getElementById('result-ad').classList.add('active');
+            
+            // Загружаем рекламный SDK если он доступен
+            if (typeof VK !== 'undefined' && VK.Retargeting && VK.Retargeting.Init) {
+                try {
+                    // Инициализация ретаргетинга (опционально)
+                    VK.Retargeting.Init();
+                    VK.Retargeting.Hit();
+                    
+                    console.log('VK Ads SDK initialized');
+                    
+                    // Загружаем рекламные баннеры
+                    loadVKBanners();
+                    
+                } catch (e) {
+                    console.error('Error initializing VK Ads:', e);
+                    showAdPlaceholders();
+                }
+            } else {
+                console.log('VK Ads SDK not available, showing placeholders');
+                showAdPlaceholders();
+            }
+        }
+        
+        function loadVKBanners() {
+            // Для реального приложения нужно будет добавить ваш рекламный код
+            // Пример: VK.call('advertisment.showBanner', { ... })
+            
+            // В тестовом режиме показываем заглушки
+            showAdPlaceholders();
+        }
+        
+        function showAdPlaceholders() {
+            // Показываем текстовые заглушки для рекламы
+            document.getElementById('menu-ad-placeholder').style.display = 'block';
+            document.getElementById('result-ad-placeholder').style.display = 'block';
         }
         
         // ==================== ВСЕ 15 ВОПРОСОВ ТЕСТА ====================
@@ -441,7 +547,6 @@
             }
         ];
 
-        // Результаты теста
         const results = [
             {
                 title: "ХОЛЕРИК 🔥",
@@ -478,7 +583,6 @@
         let scores = [0, 0, 0, 0];
         let finalResult = null;
 
-        // Получаем элементы DOM
         const menuScreen = document.getElementById('menu-screen');
         const questionScreen = document.getElementById('question-screen');
         const resultScreen = document.getElementById('result-screen');
@@ -492,12 +596,10 @@
         const shareBtn = document.getElementById('share-btn');
         const restartBtn = document.getElementById('restart-btn');
 
-        // Начало теста
         startBtn.addEventListener('click', startTest);
         nextBtn.addEventListener('click', nextQuestion);
         restartBtn.addEventListener('click', restartTest);
 
-        // Функция для шаринга
         async function shareResult() {
             const personalityNames = ['Холерик', 'Сангвиник', 'Флегматик', 'Меланхолик'];
             const typeIndex = getPersonalityType();
@@ -535,7 +637,6 @@
 
         shareBtn.addEventListener('click', shareResult);
 
-        // Основные функции игры
         function startTest() {
             currentQuestion = 0;
             scores = [0, 0, 0, 0];
@@ -550,7 +651,6 @@
             resultScreen.classList.remove('active');
             screen.classList.add('active');
             
-            // Прокрутка вверх при переключении экранов
             if (screen === questionScreen) {
                 questionScreen.scrollTop = 0;
             } else if (screen === resultScreen) {
@@ -583,7 +683,6 @@
                 answersContainer.appendChild(button);
             });
             
-            // Прокрутка вверх при загрузке нового вопроса
             answersContainer.scrollTop = 0;
         }
 
@@ -677,7 +776,6 @@
             showScreen(menuScreen);
         }
 
-        // Инициализация при загрузке
         window.addEventListener('DOMContentLoaded', () => {
             showScreen(menuScreen);
         });
