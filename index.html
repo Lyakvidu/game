@@ -13,9 +13,6 @@
     <meta property="og:image" content="https://raw.githubusercontent.com/lyakvidu/personality-quiz/main/vk-preview.png">
     <meta property="og:url" content="https://lyakvidu.github.io/personality-quiz/">
     
-    <!-- VK Ads SDK -->
-    <script src="https://vk.com/js/api/openapi.js?169"></script>
-    
     <style>
         * {
             margin: 0;
@@ -181,34 +178,15 @@
             margin-top: 15px;
         }
 
-        /* Рекламный блок */
-        .ad-container {
-            margin: 20px 0;
-            width: 100%;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            min-height: 100px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            border: 2px dashed #dee2e6;
-            flex-shrink: 0;
-        }
-
-        .ad-container.active {
-            display: flex;
-        }
-
-        .ad-placeholder {
-            color: #6c757d;
+        /* Уведомление о загрузке рекламы */
+        .ad-notice {
             text-align: center;
-            padding: 20px;
-            font-size: 14px;
-        }
-
-        #vk_ads {
-            width: 100%;
-            height: 100px;
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 15px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 8px;
         }
 
         @keyframes fadeIn {
@@ -267,11 +245,6 @@
                 padding: 16px;
                 font-size: 1.1em;
             }
-            
-            .ad-container {
-                min-height: 80px;
-                margin: 15px 0;
-            }
         }
     </style>
 </head>
@@ -288,14 +261,8 @@
                     <p>Тест определит, кто вы:</p>
                     <p>• Холерик • Сангвиник • Флегматик • Меланхолик</p>
                 </div>
-            </div>
-            
-            <!-- Рекламный блок на главном экране -->
-            <div id="menu-ad" class="ad-container">
-                <div id="vk_ads_menu" class="vk_ad"></div>
-                <div class="ad-placeholder" id="menu-ad-placeholder">
-                    🎯 Рекламный блок<br>
-                    <small>Здесь будет отображаться реклама</small>
+                <div class="ad-notice">
+                    Поддержите разработчика — просматривайте рекламу в приложении
                 </div>
             </div>
         </div>
@@ -313,16 +280,6 @@
         <div id="result-screen" class="screen">
             <h1>Ваш психологический портрет</h1>
             <div id="result-content"></div>
-            
-            <!-- Рекламный блок на экране результатов -->
-            <div id="result-ad" class="ad-container">
-                <div id="vk_ads_result" class="vk_ad"></div>
-                <div class="ad-placeholder" id="result-ad-placeholder">
-                    🎯 Рекламный блок<br>
-                    <small>Здесь будет отображаться реклама</small>
-                </div>
-            </div>
-            
             <div>
                 <button id="share-btn" class="button result-share">📱 Поделиться результатом</button>
                 <button id="restart-btn" class="button result-restart">🔄 Пройти ещё раз</button>
@@ -336,7 +293,7 @@
     <script>
         // ==================== VK MINI APP ИНИЦИАЛИЗАЦИЯ ====================
         let isVK = false;
-        let vkAdsEnabled = false;
+        let bannerAdShown = false;
         
         // Инициализация VK Bridge
         if (typeof vkBridge !== 'undefined') {
@@ -351,8 +308,8 @@
                 .then(data => {
                     console.log('Running in VK with params:', data);
                     
-                    // Показываем рекламные блоки в VK
-                    initVKAds();
+                    // Показываем баннерную рекламу на главном экране
+                    showBannerAd();
                 })
                 .catch(error => {
                     console.log('Not running in VK:', error);
@@ -363,49 +320,80 @@
             isVK = false;
         }
         
-        // ==================== ИНИЦИАЛИЗАЦИЯ РЕКЛАМЫ VK ====================
-        function initVKAds() {
-            if (!isVK) return;
-            
-            // Включаем рекламные блоки
-            vkAdsEnabled = true;
-            document.getElementById('menu-ad').classList.add('active');
-            document.getElementById('result-ad').classList.add('active');
-            
-            // Загружаем рекламный SDK если он доступен
-            if (typeof VK !== 'undefined' && VK.Retargeting && VK.Retargeting.Init) {
-                try {
-                    // Инициализация ретаргетинга (опционально)
-                    VK.Retargeting.Init();
-                    VK.Retargeting.Hit();
-                    
-                    console.log('VK Ads SDK initialized');
-                    
-                    // Загружаем рекламные баннеры
-                    loadVKBanners();
-                    
-                } catch (e) {
-                    console.error('Error initializing VK Ads:', e);
-                    showAdPlaceholders();
-                }
-            } else {
-                console.log('VK Ads SDK not available, showing placeholders');
-                showAdPlaceholders();
+        // ==================== ФУНКЦИИ ДЛЯ БАННЕРНОЙ РЕКЛАМЫ ====================
+        function showBannerAd() {
+            if (!isVK || typeof vkBridge === 'undefined') {
+                return;
             }
-        }
-        
-        function loadVKBanners() {
-            // Для реального приложения нужно будет добавить ваш рекламный код
-            // Пример: VK.call('advertisment.showBanner', { ... })
             
-            // В тестовом режиме показываем заглушки
-            showAdPlaceholders();
+            // Проверяем, не показан ли уже баннер
+            if (bannerAdShown) {
+                return;
+            }
+            
+            // Показываем баннерную рекламу внизу экрана
+            vkBridge.send('VKWebAppShowBannerAd', {
+                banner_location: 'bottom' // или 'top' для верхнего баннера
+            })
+            .then(data => {
+                console.log('Banner ad shown successfully:', data);
+                bannerAdShown = true;
+                
+                // Подписываемся на события баннера
+                setupBannerEvents();
+            })
+            .catch(error => {
+                console.log('Failed to show banner ad:', error);
+            });
         }
         
-        function showAdPlaceholders() {
-            // Показываем текстовые заглушки для рекламы
-            document.getElementById('menu-ad-placeholder').style.display = 'block';
-            document.getElementById('result-ad-placeholder').style.display = 'block';
+        function hideBannerAd() {
+            if (!isVK || typeof vkBridge === 'undefined' || !bannerAdShown) {
+                return;
+            }
+            
+            vkBridge.send('VKWebAppHideBannerAd', {})
+            .then(data => {
+                console.log('Banner ad hidden:', data);
+                bannerAdShown = false;
+            })
+            .catch(error => {
+                console.log('Failed to hide banner ad:', error);
+            });
+        }
+        
+        function setupBannerEvents() {
+            if (!isVK || typeof vkBridge === 'undefined') {
+                return;
+            }
+            
+            // Событие при обновлении баннера
+            vkBridge.subscribe(e => {
+                if (e.detail.type === 'VKWebAppBannerAdUpdated') {
+                    console.log('Banner ad updated:', e.detail.data);
+                }
+                if (e.detail.type === 'VKWebAppBannerAdClosedByUser') {
+                    console.log('Banner ad closed by user');
+                    bannerAdShown = false;
+                }
+            });
+        }
+        
+        function checkBannerAd() {
+            if (!isVK || typeof vkBridge === 'undefined') {
+                return;
+            }
+            
+            vkBridge.send('VKWebAppCheckBannerAd', {})
+            .then(data => {
+                console.log('Banner ad check result:', data);
+                if (data.result) {
+                    bannerAdShown = true;
+                }
+            })
+            .catch(error => {
+                console.log('Failed to check banner ad:', error);
+            });
         }
         
         // ==================== ВСЕ 15 ВОПРОСОВ ТЕСТА ====================
@@ -432,7 +420,7 @@
                 text: "Ваша реакция на неожиданную хорошую новость?",
                 answers: [
                     { text: "Эмоциональный взрыв радости", scores: [3, 2, 0, 0] },
-                    { text: "Искренне радуюсь и рассказываю всем", scores: [1, 3, 0, 1] },
+                    { text: "Искренно радуюсь и рассказываю всем", scores: [1, 3, 0, 1] },
                     { text: "Спокойно принимаю, внешне почти не показываю", scores: [0, 1, 3, 1] },
                     { text: "Радуюсь внутри, но внешне сдержан", scores: [0, 0, 1, 3] }
                 ]
@@ -656,6 +644,15 @@
             } else if (screen === resultScreen) {
                 resultScreen.scrollTop = 0;
                 resultContent.scrollTop = 0;
+                // Показываем рекламу на экране результатов
+                if (isVK) {
+                    setTimeout(() => showBannerAd(), 500);
+                }
+            } else if (screen === menuScreen) {
+                // Показываем рекламу на главном экране
+                if (isVK) {
+                    setTimeout(() => showBannerAd(), 500);
+                }
             }
         }
 
@@ -756,6 +753,9 @@
                         <p><strong>Зоны роста:</strong> ${finalResult.weaknesses}</p>
                     </div>
                     ${scoresHtml}
+                    <div class="ad-notice">
+                        Спасибо, что прошли тест! Поддержите разработчика — просматривайте рекламу в приложении
+                    </div>
                 </div>
             `;
         }
