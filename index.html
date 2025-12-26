@@ -11,7 +11,7 @@
     <meta property="og:title" content="Психологический портрет">
     <meta property="og:description" content="Узнай свой тип личности за 5 минут! Тест из 15 вопросов определит, кто ты: холерик, сангвиник, флегматик или меланхолик.">
     <meta property="og:image" content="https://raw.githubusercontent.com/lyakvidu/personality-quiz/main/vk-preview.png">
-    <meta property="og:url" content="https://lyakvidu.github.io/personality-quiz/">
+    <meta property="og:url" content="https://vk.com/app12345678">
     
     <style>
         * {
@@ -294,6 +294,7 @@
         // ==================== VK MINI APP ИНИЦИАЛИЗАЦИЯ ====================
         let isVK = false;
         let bannerAdShown = false;
+        let vkAppId = null;
         
         // Инициализация VK Bridge
         if (typeof vkBridge !== 'undefined') {
@@ -307,6 +308,7 @@
                 })
                 .then(data => {
                     console.log('Running in VK with params:', data);
+                    vkAppId = data.vk_app_id;
                     
                     // Показываем баннерную рекламу на главном экране
                     showBannerAd();
@@ -420,7 +422,7 @@
                 text: "Ваша реакция на неожиданную хорошую новость?",
                 answers: [
                     { text: "Эмоциональный взрыв радости", scores: [3, 2, 0, 0] },
-                    { text: "Искренно радуюсь и рассказываю всем", scores: [1, 3, 0, 1] },
+                    { text: "Искренне радуюсь и рассказываю всем", scores: [1, 3, 0, 1] },
                     { text: "Спокойно принимаю, внешне почти не показываю", scores: [0, 1, 3, 1] },
                     { text: "Радуюсь внутри, но внешне сдержан", scores: [0, 0, 1, 3] }
                 ]
@@ -591,12 +593,25 @@
         async function shareResult() {
             const personalityNames = ['Холерик', 'Сангвиник', 'Флегматик', 'Меланхолик'];
             const typeIndex = getPersonalityType();
-            const resultText = `🎭 Я прошёл тест "Психологический портрет" и мой результат: ${personalityNames[typeIndex]} - ${results[typeIndex].title}!\n\nПройди и узнай свой тип личности!\n${window.location.href}`;
+            
+            // Формирую
+            let shareUrl;
+            if (isVK && vkAppId) {
+                // Используем ссылку на приложение в VK
+                shareUrl = `https://vk.com/app${vkAppId}`;
+            } else {
+                // Для внешнего использования или если нет ID приложения
+                // Можно использовать общую ссылку на приложение в VK
+                // ИЛИ, если приложение уже опубликовано
+                shareUrl = "https://vk.com/app53752819"; 
+            }
+            
+            const resultText = `🎭 Я прошёл тест "Психологический портрет" и мой результат: ${personalityNames[typeIndex]} - ${results[typeIndex].title}!\n\nПройди и узнай свой тип личности!\n${shareUrl}`;
             
             if (isVK && typeof vkBridge !== 'undefined') {
                 try {
                     await vkBridge.send('VKWebAppShare', {
-                        link: window.location.href,
+                        link: shareUrl,
                         title: 'Мой психологический портрет',
                         text: resultText
                     });
@@ -614,7 +629,7 @@
                 navigator.share({
                     title: 'Мой психологический портрет',
                     text: text,
-                    url: window.location.href
+                    url: "https://vk.com/app53752819" // Замените на ваш реальный ID приложения
                 });
             } else {
                 navigator.clipboard.writeText(text)
