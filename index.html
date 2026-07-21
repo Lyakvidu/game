@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Психологический портрет | Тест на тип личности</title>
+    
+    <!-- Иконка -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%236a11cb%22/><circle cx=%2235%22 cy=%2240%22 r=%2210%22 fill=%22white%22/><circle cx=%2265%22 cy=%2240%22 r=%2210%22 fill=%22white%22/><path d=%22M30 70 Q50 85 70 70%22 stroke=%22white%22 stroke-width=%225%22 fill=%22none%22/></svg>">
+    
+    <meta property="og:title" content="Психологический портрет">
+    <meta property="og:description" content="Узнай свой тип личности за 5 минут! Тест из 15 вопросов определит, кто ты: холерик, сангвиник, флегматик или меланхолик.">
+    <meta property="og:image" content="https://raw.githubusercontent.com/lyakvidu/personality-quiz/main/vk-preview.png">
+    <meta property="og:url" content="https://vk.com/app54398320">
+    <meta property="og:see_also" content="https://ok.ru/app/512004276903">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+            padding: 30px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.5s;
+            flex-direction: column;
+            overflow-y: auto;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #444;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: #eee;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff7e5f, #feb47b);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .question-number {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            flex-shrink: 0;
+        }
+
+        .question-text {
+            font-size: 1.4em;
+            line-height: 1.5;
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            min-height: 80px;
+            flex-shrink: 0;
+        }
+
+        .answers {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .answer-btn {
+            padding: 18px 20px;
+            border: none;
+            background: #f5f5f5;
+            border-radius: 12px;
+            font-size: 1.1em;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 5px solid #2575fc;
+            flex-shrink: 0;
+        }
+
+        .answer-btn:hover {
+            background: #e3f2fd;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .button {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+            flex-shrink: 0;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .result-share {
+            background: linear-gradient(90deg, #25D366, #128C7E);
+        }
+
+        .result-restart {
+            background: linear-gradient(90deg, #ff7e5f, #feb47b);
+        }
+
+        .result-reward {
+            background: linear-gradient(90deg, #7f00ff, #e100ff);
+        }
+
+        .button:disabled {
+            cursor: not-allowed;
+            opacity: 0.65;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .reward-status {
+            margin-top: 10px;
+            color: #666;
+            font-size: 0.9em;
+            text-align: center;
+        }
+
+        .reward-advice {
+            margin-top: 20px;
+            padding: 20px;
+            border: 2px solid #7f00ff;
+            border-radius: 12px;
+            background: #faf5ff;
+            color: #444;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #result-content {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding-right: 5px;
+            margin-bottom: 20px;
+        }
+
+        #result-screen .button {
+            margin-top: 15px;
+        }
+
+        /* Уведомление о загрузке рекламы */
+        .ad-notice {
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 15px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Стили для скроллбара */
+        .answers::-webkit-scrollbar,
+        #result-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .answers::-webkit-scrollbar-track,
+        #result-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .answers::-webkit-scrollbar-thumb,
+        #result-content::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        .answers::-webkit-scrollbar-thumb:hover,
+        #result-content::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+                border-radius: 15px;
+                max-height: 95vh;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            h2 {
+                font-size: 1.4em;
+            }
+            
+            .question-text {
+                font-size: 1.2em;
+            }
+            
+            .answer-btn {
+                padding: 15px;
+                font-size: 1em;
+            }
+            
+            .button {
+                padding: 16px;
+                font-size: 1.1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="menu-screen" class="screen active">
+            <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                <h1>👤 Психологический портрет</h1>
+                <p style="text-align: center; font-size: 1.2em; color: #666; margin-bottom: 30px;">
+                    Ответьте на 15 вопросов и узнайте свой тип личности по теории темпераментов
+                </p>
+                <button id="start-btn" class="button">Начать тест</button>
+                <div style="margin-top: 40px; color: #888; text-align: center;">
+                    <p>Тест определит, кто вы:</p>
+                    <p>• Холерик • Сангвиник • Флегматик • Меланхолик</p>
+                </div>
+                <div class="ad-notice">
+                    Поддержите разработчика — просматривайте рекламу в приложении
+                </div>
+            </div>
+        </div>
+
+        <div id="question-screen" class="screen">
+            <div class="question-number" id="question-counter">Вопрос 1 из 15</div>
+            <div class="progress-bar">
+                <div class="progress" id="progress"></div>
+            </div>
+            <h2 id="question-text">Текст вопроса</h2>
+            <div class="answers" id="answers-container"></div>
+            <button id="next-btn" class="button hidden">Следующий вопрос</button>
+        </div>
+
+        <div id="result-screen" class="screen">
+            <h1>Ваш психологический портрет</h1>
+            <div id="result-content"></div>
+            <div>
+                <button id="share-btn" class="button result-share">📱 Поделиться результатом</button>
+                <button id="reward-btn" class="button result-reward hidden">🎁 Получить персональный совет</button>
+                <div id="reward-status" class="reward-status hidden" aria-live="polite"></div>
+                <button id="restart-btn" class="button result-restart">🔄 Пройти ещё раз</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Подключаем VK Bridge -->
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+    
+    <script>
+        // ==================== VK / ОК И МОНИТИЗАЦИЯ ====================
+        const VK_APP_ID = '54398320';
+        const OK_APP_ID = '512004276903';
+        const VK_APP_URL = `https://vk.com/app${VK_APP_ID}`;
+        const OK_APP_URL = `https://ok.ru/app/${OK_APP_ID}`;
+        const INTERSTITIAL_COOLDOWN_MS = 3 * 60 * 1000;
+        const INTERSTITIAL_STORAGE_KEY = 'personalityQuizLastInterstitialAt';
+
+        let isPlatformApp = false;
+        let activePlatform = 'vk';
+        let bannerAdShown = false;
+        let bannerRequestInFlight = false;
+        let nativeAdInFlight = false;
+        let bridgeEventsSubscribed = false;
+        let lastInterstitialAt = 0;
+
+        function detectPlatform(launchParams = {}) {
+            const platformHints = [
+                launchParams.vk_platform,
+                launchParams.platform,
+                new URLSearchParams(window.location.search).get('vk_platform'),
+                document.referrer,
+                window.location.ancestorOrigins && window.location.ancestorOrigins[0]
+            ].filter(Boolean).join(' ').toLowerCase();
+
+            return /(^|[\s_./-])(ok|odnoklassniki)([\s_./-]|$)/.test(platformHints) ? 'ok' : 'vk';
+        }
+
+        function getAppUrl() {
+            return activePlatform === 'ok' ? OK_APP_URL : VK_APP_URL;
+        }
+
+        async function initializePlatform() {
+            if (typeof vkBridge === 'undefined') {
+                console.log('VK Bridge not detected, running in standalone mode');
+                return;
+            }
+
+            try {
+                await vkBridge.send('VKWebAppInit', {});
+                isPlatformApp = true;
+                setupBridgeEvents();
+
+                let launchParams = {};
+                try {
+                    launchParams = await vkBridge.send('VKWebAppGetLaunchParams');
+                } catch (error) {
+                    console.warn('Launch params are unavailable, using URL detection:', error);
+                }
+
+                activePlatform = detectPlatform(launchParams);
+                console.log(`Platform initialized: ${activePlatform}`, launchParams);
+                await showBannerAd();
+            } catch (error) {
+                console.log('Not running inside VK or OK:', error);
+                isPlatformApp = false;
+            }
+        }
+
+        function setupBridgeEvents() {
+            if (bridgeEventsSubscribed || typeof vkBridge === 'undefined') {
+                return;
+            }
+
+            bridgeEventsSubscribed = true;
+            vkBridge.subscribe(event => {
+                const eventType = event && event.detail && event.detail.type;
+                const eventData = event && event.detail && event.detail.data;
+
+                if (eventType === 'VKWebAppBannerAdUpdated') {
+                    console.log('Banner ad updated:', eventData);
+                } else if (eventType === 'VKWebAppBannerAdClosedByUser') {
+                    console.log('Banner ad closed by user');
+                    bannerAdShown = false;
+                }
+            });
+        }
+
+        async function showBannerAd() {
+            if (!isPlatformApp || typeof vkBridge === 'undefined' || bannerAdShown || bannerRequestInFlight) {
+                return false;
+            }
+
+            bannerRequestInFlight = true;
+            try {
+                try {
+                    const availability = await vkBridge.send('VKWebAppCheckBannerAd', {});
+                    if (!availability || availability.result !== true) {
+                        console.log('Banner ad is currently unavailable');
+                        return false;
+                    }
+                } catch (error) {
+                    // Некоторые версии клиентов не поддерживают предварительную проверку.
+                    // В таком случае пробуем официальный метод показа напрямую.
+                    console.warn('Banner availability check failed, trying to show it directly:', error);
+                }
+
+                const result = await vkBridge.send('VKWebAppShowBannerAd', {
+                    banner_location: 'bottom'
+                });
+                bannerAdShown = Boolean(result && result.result === true);
+                console.log('Banner ad result:', result);
+                return bannerAdShown;
+            } catch (error) {
+                bannerAdShown = false;
+                console.log('Failed to show banner ad:', error);
+                return false;
+            } finally {
+                bannerRequestInFlight = false;
+            }
+        }
+
+        async function hideBannerAd() {
+            if (!isPlatformApp || typeof vkBridge === 'undefined' || !bannerAdShown) {
+                return false;
+            }
+
+            try {
+                const result = await vkBridge.send('VKWebAppHideBannerAd', {});
+                if (!result || result.result !== false) {
+                    bannerAdShown = false;
+                }
+                console.log('Banner ad hidden:', result);
+                return !bannerAdShown;
+            } catch (error) {
+                console.log('Failed to hide banner ad:', error);
+                return false;
+            }
+        }
+
+        async function checkNativeAdAvailability(adFormat) {
+            if (!isPlatformApp || typeof vkBridge === 'undefined') {
+                return false;
+            }
+
+            try {
+                const result = await vkBridge.send('VKWebAppCheckNativeAds', {
+                    ad_format: adFormat,
+                    use_waterfall: true
+                });
+                return Boolean(result && result.result === true);
+            } catch (error) {
+                // Оставляем возможность попробовать показ в старых клиентах,
+                // где проверка иногда отсутствует, а сам показ работает.
+                console.warn(`${adFormat} availability check failed:`, error);
+                return true;
+            }
+        }
+
+        async function showNativeAd(adFormat) {
+            if (!isPlatformApp || typeof vkBridge === 'undefined' || nativeAdInFlight) {
+                return false;
+            }
+
+            nativeAdInFlight = true;
+            try {
+                const isAvailable = await checkNativeAdAvailability(adFormat);
+                if (!isAvailable) {
+                    console.log(`${adFormat} ad is currently unavailable`);
+                    return false;
+                }
+
+                const result = await vkBridge.send('VKWebAppShowNativeAds', {
+                    ad_format: adFormat,
+                    use_waterfall: true
+                });
+                console.log(`${adFormat} ad result:`, result);
+                return Boolean(result && result.result === true);
+            } catch (error) {
+                console.log(`Failed to show ${adFormat} ad:`, error);
+                return false;
+            } finally {
+                nativeAdInFlight = false;
+            }
+        }
+
+        function getLastInterstitialTime() {
+            try {
+                const storedTimestamp = Number(localStorage.getItem(INTERSTITIAL_STORAGE_KEY)) || 0;
+                return Math.max(lastInterstitialAt, storedTimestamp);
+            } catch (error) {
+                return lastInterstitialAt;
+            }
+        }
+
+        function saveLastInterstitialTime(timestamp) {
+            lastInterstitialAt = timestamp;
+            try {
+                localStorage.setItem(INTERSTITIAL_STORAGE_KEY, String(timestamp));
+            } catch (error) {
+                console.warn('Could not save interstitial cooldown:', error);
+            }
+        }
+
+        async function showInterstitialAd() {
+            if (Date.now() - getLastInterstitialTime() < INTERSTITIAL_COOLDOWN_MS) {
+                console.log('Interstitial skipped because of cooldown');
+                return false;
+            }
+
+            const wasShown = await showNativeAd('interstitial');
+            if (wasShown) {
+                saveLastInterstitialTime(Date.now());
+            }
+            return wasShown;
+        }
+
+        initializePlatform();
+        
+        // ==================== ВСЕ 15 ВОПРОСОВ ТЕСТА ====================
+        const questions = [
+            {
+                text: "Ваш друг опаздывает на встречу на 30 минут. Ваша реакция?",
+                answers: [
+                    { text: "Начну нервно звонить и писать сообщения", scores: [3, 1, 0, 0] },
+                    { text: "Звоню узнать, всё ли в порядке", scores: [1, 3, 1, 0] },
+                    { text: "Спокойно займусь своими делами, он успеет", scores: [0, 0, 3, 1] },
+                    { text: "Расстроюсь, что всё пошло не по плану", scores: [0, 0, 1, 3] }
+                ]
+            },
+            {
+                text: "Как вы обычно принимаете важные решения?",
+                answers: [
+                    { text: "Быстро и решительно", scores: [3, 1, 0, 0] },
+                    { text: "Обдумываю, но недолго", scores: [1, 3, 1, 0] },
+                    { text: "Взвешиваю все 'за' и 'против'", scores: [0, 1, 3, 1] },
+                    { text: "Долго сомневаюсь, советуюсь с другими", scores: [0, 0, 1, 3] }
+                ]
+            },
+            {
+                text: "Ваша реакция на неожиданную хорошую новость?",
+                answers: [
+                    { text: "Эмоциональный взрыв радости", scores: [3, 2, 0, 0] },
+                    { text: "Искренне радуюсь и рассказываю всем", scores: [1, 3, 0, 1] },
+                    { text: "Спокойно принимаю, внешне почти не показываю", scores: [0, 1, 3, 1] },
+                    { text: "Радуюсь внутри, но внешне сдержан", scores: [0, 0, 1, 3] }
+                ]
+            },
+            {
+                text: "Как вы ведёте себя в новой компании?",
+                answers: [
+                    { text: "Беру инициативу на себя", scores: [3, 2, 0, 0] },
+                    { text: "Легко нахожу общий язык со всеми", scores: [1, 3, 0, 0] },
+                    { text: "Наблюдаю со стороны", scores: [0, 0, 3, 2] },
+                    { text: "Чувствую себя некомфортно", scores: [0, 0, 1, 3] }
+                ]
+            },
+            {
+                text: "Что вы делаете, когда сталкиваетесь с трудностями?",
+                answers: [
+                    { text: "Бросаюсь решать проблему немедленно", scores: [3, 1, 0, 0] },
+                    { text: "Ищу творческий подход", scores: [1, 3, 0, 0] },
+                    { text: "Анализирую ситуацию спокойно", scores: [0, 1, 3, 1] },
+                    { text: "Переживаю и думаю о худшем", scores: [0, 0, 1, 3] }
+                ]
+            },
+            {
+                text: "Как вы относитесь к переменам?",
+                answers: [
+                    { text: "Обожаю, это драйв и адреналин", scores: [3, 2, 0, 0] },
+                    { text: "Приветствую, если они к лучшему", scores: [1, 3, 1, 0] },
+                    { text: "Принимаю, если они неизбежны", scores: [0, 1, 3, 1] },
+                    { text: "Предпочитаю стабильность", scores: [0, 0, 2, 3] }
+                ]
+            },
+            {
+                text: "Ваш рабочий стиль?",
+                answers: [
+                    { text: "Энергичный, но могу быстро выгореть", scores: [3, 1, 0, 0] },
+                    { text: "Продуктивный, но нужны перерывы", scores: [1, 3, 0, 0] },
+                    { text: "Методичный и последовательный", scores: [0, 1, 3, 1] },
+                    { text: "Старательный, но медленный", scores: [0, 0, 1, 3] }
+                ]
+            },
+            {
+                text: "Как вы выражаете гнев?",
+                answers: [
+                    { text: "Вспышка гнева, но быстро отхожу", scores: [3, 2, 0, 0] },
+                    { text: "Могу накричать, но быстро забываю", scores: [2, 3, 0, 0] },
+                    { text: "Сдержанно, контролирую эмоции", scores: [0, 0, 3, 2] },
+                    { text: "Коплю обиду внутри", scores: [0, 0, 1, 3] }
+                ]
+            },
+            {
+                text: "Ваше отношение к спорту?",
+                answers: [
+                    { text: "Экстремальные виды спорта", scores: [3, 1, 0, 0] },
+                    { text: "Командные игры", scores: [1, 3, 0, 0] },
+                    { text: "Пешие прогулки или йога", scores: [0, 1, 3, 1] },
+                    { text: "Предпочитаю чтение или спокойные хобби", scores: [0, 0, 1, 3] }
+                ]
+            },
+            {
+                text: "Как вы отдыхаете после тяжёлого дня?",
+                answers: [
+                    { text: "Активный отдых, встреча с друзьями", scores: [3, 2, 0, 0] },
+                    { text: "Общение с близкими", scores: [1, 3, 0, 0] },
+                    { text: "Тихий вечер дома", scores: [0, 1, 3, 2] },
+                    { text: "Уединение, чтобы прийти в себя", scores: [0, 0, 1, 3] }
+                ]
+            },
+            {
+                text: "Ваша реакция на критику?",
+                answers: [
+                    { text: "Сразу защищаюсь", scores: [3, 1, 0, 0] },
+                    { text: "Прислушиваюсь, если она конструктивна", scores: [1, 3, 1, 0] },
+                    { text: "Анализирую спокойно", scores: [0, 1, 3, 1] },
+                    { text: "Сильно расстраиваюсь", scores: [0, 0, 1, 3] }
+                ]
+            },
+            {
+                text: "Как вы ведёте себя в конфликтной ситуации?",
+                answers: [
+                    { text: "Иду в открытую конфронтацию", scores: [3, 1, 0, 0] },
+                    { text: "Стараюсь найти компромисс", scores: [1, 3, 1, 0] },
+                    { text: "Сохраняю нейтралитет", scores: [0, 1, 3, 1] },
+                    { text: "Избегаю конфликта", scores: [0, 0, 1, 3] }
+                ]
+            },
+            {
+                text: "Что важнее в работе?",
+                answers: [
+                    { text: "Результат и скорость", scores: [3, 1, 0, 0] },
+                    { text: "Творчество и общение", scores: [1, 3, 0, 0] },
+                    { text: "Стабильность и порядок", scores: [0, 1, 3, 1] },
+                    { text: "Глубина и качество", scores: [0, 0, 1, 3] }
+                ]
+            },
+            {
+                text: "Как вы планируете своё время?",
+                answers: [
+                    { text: "Импровизирую по ситуации", scores: [3, 2, 0, 0] },
+                    { text: "Планирую, но не строго", scores: [1, 3, 1, 0] },
+                    { text: "Чётко следую плану", scores: [0, 1, 3, 1] },
+                    { text: "Детально продумываю каждый шаг", scores: [0, 0, 1, 3] }
+                ]
+            },
+            {
+                text: "Что для вас идеальный выходной?",
+                answers: [
+                    { text: "Активный отдых, приключения", scores: [3, 2, 0, 0] },
+                    { text: "Встреча с друзьями, вечеринка", scores: [1, 3, 0, 0] },
+                    { text: "Спокойный день дома, хобби", scores: [0, 1, 3, 2] },
+                    { text: "Уединение, чтение, размышления", scores: [0, 0, 1, 3] }
+                ]
+            }
+        ];
+
+        const results = [
+            {
+                title: "ХОЛЕРИК 🔥",
+                description: "Вы - лидер по натуре! Ваша энергия бьёт через край, вы решительны и прямолинейны. Быстро принимаете решения и не боитесь рисковать. Иногда можете быть вспыльчивы, но так же быстро отходите. Вас уважают за силу воли и умение вести за собой.",
+                strengths: "Энергичность, решительность, лидерские качества",
+                weaknesses: "Вспыльчивость, нетерпеливость",
+                advice: "Используйте свою скорость как преимущество, но перед важным ответом делайте короткую паузу. Сначала сформулируйте цель, затем действуйте: так ваша энергия будет вести людей за собой, а не давить на них.",
+                color: "#ff6b6b"
+            },
+            {
+                title: "САНГВИНИК 🌞",
+                description: "Жизнерадостный и общительный! Вы легко находите общий язык с людьми, оптимистичны и любознательны. У вас много друзей и интересов. Иногда вам не хватает усидчивости, но ваше обаяние спасает любую ситуацию. С вами никогда не скучно!",
+                strengths: "Коммуникабельность, оптимизм, адаптивность",
+                weaknesses: "Поверхностность, непостоянство",
+                advice: "Вы отлично зажигаете себя и других новыми идеями. Чтобы чаще доводить их до результата, выбирайте одну главную задачу на день и завершайте её до того, как переключитесь на следующую.",
+                color: "#4ecdc4"
+            },
+            {
+                title: "ФЛЕГМАТИК 🏔️",
+                description: "Спокойный и уравновешенный! Вы - островок стабильности в бушующем море. Всегда хладнокровны, рассудительны и надёжны. Вы прекрасный слушатель и друг, на которого можно положиться. Иногда вас упрекают в медлительности, но вы просто не любите суетиться.",
+                strengths: "Спокойствие, надёжность, терпеливость",
+                weaknesses: "Медлительность, пассивность",
+                advice: "Ваша сила — в устойчивости и способности не паниковать. Для сложных решений заранее назначайте себе конкретный срок: это сохранит вашу основательность, но не даст размышлениям превратиться в откладывание.",
+                color: "#45b7d1"
+            },
+            {
+                title: "МЕЛАНХОЛИК 🌙",
+                description: "Чувствительный и глубокий мыслитель! Вы тонко чувствуете мир вокруг, творчески одарены и внимательны к деталям. Преданный друг и перфекционист в работе. Иногда вы слишком критичны к себе и склонны к переживаниям, но именно эта глубина делает вас уникальным.",
+                strengths: "Чувствительность, креативность, внимательность",
+                weaknesses: "Ранимость, пессимизм",
+                advice: "Ваша внимательность помогает замечать то, что пропускают другие. Отделяйте полезный анализ от самокритики: записывайте один конкретный следующий шаг и оценивайте себя по сделанному, а не по идеальному образу результата.",
+                color: "#96ceb4"
+            }
+        ];
+
+        // ==================== ИГРОВАЯ ЛОГИКА ====================
+        let currentQuestion = 0;
+        let scores = [0, 0, 0, 0];
+        let finalResult = null;
+        let finishingTest = false;
+
+        const menuScreen = document.getElementById('menu-screen');
+        const questionScreen = document.getElementById('question-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const questionText = document.getElementById('question-text');
+        const answersContainer = document.getElementById('answers-container');
+        const nextBtn = document.getElementById('next-btn');
+        const progressBar = document.getElementById('progress');
+        const questionCounter = document.getElementById('question-counter');
+        const resultContent = document.getElementById('result-content');
+        const startBtn = document.getElementById('start-btn');
+        const shareBtn = document.getElementById('share-btn');
+        const rewardBtn = document.getElementById('reward-btn');
+        const rewardStatus = document.getElementById('reward-status');
+        const restartBtn = document.getElementById('restart-btn');
+
+        startBtn.addEventListener('click', startTest);
+        nextBtn.addEventListener('click', nextQuestion);
+        shareBtn.addEventListener('click', shareResult);
+        rewardBtn.addEventListener('click', showRewardedAdvice);
+        restartBtn.addEventListener('click', restartTest);
+
+        async function shareResult() {
+            const personalityNames = ['Холерик', 'Сангвиник', 'Флегматик', 'Меланхолик'];
+            const typeIndex = getPersonalityType();
+            const shareUrl = getAppUrl();
+            const resultText = `🎭 Я прошёл тест "Психологический портрет" и мой результат: ${personalityNames[typeIndex]} - ${results[typeIndex].title}!\n\nПройди и узнай свой тип личности!\n${shareUrl}`;
+
+            if (isPlatformApp && typeof vkBridge !== 'undefined') {
+                try {
+                    await vkBridge.send('VKWebAppShare', {
+                        link: shareUrl,
+                        title: 'Мой психологический портрет',
+                        text: resultText
+                    });
+                } catch (error) {
+                    console.error('Platform share failed:', error);
+                    await fallbackShare(resultText, shareUrl);
+                }
+            } else {
+                await fallbackShare(resultText, shareUrl);
+            }
+        }
+
+        async function fallbackShare(text, shareUrl) {
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'Мой психологический портрет',
+                        text,
+                        url: shareUrl
+                    });
+                    return;
+                } catch (error) {
+                    if (error && error.name === 'AbortError') {
+                        return;
+                    }
+                    console.warn('Native share failed, copying text instead:', error);
+                }
+            }
+
+            try {
+                await navigator.clipboard.writeText(text);
+                alert('Результат скопирован! Теперь поделитесь им с друзьями.');
+            } catch (error) {
+                prompt('Скопируйте текст и поделитесь им:', text);
+            }
+        }
+
+        function startTest() {
+            currentQuestion = 0;
+            scores = [0, 0, 0, 0];
+            finalResult = null;
+            finishingTest = false;
+            rewardBtn.classList.add('hidden');
+            rewardBtn.disabled = false;
+            rewardStatus.classList.add('hidden');
+            rewardStatus.textContent = '';
+            showScreen(questionScreen);
+            loadQuestion();
+        }
+
+        function showScreen(screen) {
+            menuScreen.classList.remove('active');
+            questionScreen.classList.remove('active');
+            resultScreen.classList.remove('active');
+            screen.classList.add('active');
+            
+            if (screen === questionScreen) {
+                questionScreen.scrollTop = 0;
+                if (isPlatformApp) {
+                    setTimeout(() => showBannerAd(), 300);
+                }
+            } else if (screen === resultScreen) {
+                resultScreen.scrollTop = 0;
+                resultContent.scrollTop = 0;
+                if (isPlatformApp) {
+                    setTimeout(() => showBannerAd(), 500);
+                }
+            } else if (screen === menuScreen) {
+                if (isPlatformApp) {
+                    setTimeout(() => showBannerAd(), 500);
+                }
+            }
+        }
+
+        function loadQuestion() {
+            if (currentQuestion >= questions.length) {
+                void finishTest();
+                return;
+            }
+            
+            const question = questions[currentQuestion];
+            questionText.textContent = question.text;
+            
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+            questionCounter.textContent = `Вопрос ${currentQuestion + 1} из ${questions.length}`;
+            
+            answersContainer.innerHTML = '';
+            nextBtn.classList.add('hidden');
+            nextBtn.disabled = false;
+            
+            question.answers.forEach((answer, index) => {
+                const button = document.createElement('button');
+                button.className = 'answer-btn';
+                button.textContent = `${index + 1}. ${answer.text}`;
+                button.addEventListener('click', () => selectAnswer(index));
+                answersContainer.appendChild(button);
+            });
+            
+            answersContainer.scrollTop = 0;
+        }
+
+        function selectAnswer(answerIndex) {
+            const answerScores = questions[currentQuestion].answers[answerIndex].scores;
+            for (let i = 0; i < scores.length; i++) {
+                scores[i] += answerScores[i];
+            }
+            
+            nextBtn.classList.remove('hidden');
+            
+            const answerButtons = document.querySelectorAll('.answer-btn');
+            answerButtons.forEach(btn => {
+                btn.disabled = true;
+                btn.style.opacity = '0.7';
+            });
+            
+            answerButtons[answerIndex].style.background = '#e3f2fd';
+            answerButtons[answerIndex].style.borderLeft = '5px solid #6a11cb';
+        }
+
+        function nextQuestion() {
+            if (nextBtn.disabled || finishingTest) {
+                return;
+            }
+
+            nextBtn.disabled = true;
+            currentQuestion++;
+            loadQuestion();
+        }
+
+        async function finishTest() {
+            if (finishingTest) {
+                return;
+            }
+
+            finishingTest = true;
+            nextBtn.disabled = true;
+            try {
+                await hideBannerAd();
+                await showInterstitialAd();
+                showResults();
+            } finally {
+                finishingTest = false;
+            }
+        }
+
+        function showResults() {
+            showScreen(resultScreen);
+            
+            let maxScore = 0;
+            let personalityType = 0;
+            
+            for (let i = 0; i < scores.length; i++) {
+                if (scores[i] > maxScore) {
+                    maxScore = scores[i];
+                    personalityType = i;
+                }
+            }
+            
+            finalResult = results[personalityType];
+            
+            let scoresHtml = '<div style="margin: 20px 0;">';
+            scores.forEach((score, index) => {
+                const percent = (score / (questions.length * 3)) * 100;
+                const personalityNames = ['Холерик', 'Сангвиник', 'Флегматик', 'Меланхолик'];
+                scoresHtml += `
+                    <div style="margin-bottom: 10px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span>${personalityNames[index]}</span>
+                            <span>${score} баллов</span>
+                        </div>
+                        <div style="height: 10px; background: #eee; border-radius: 5px; overflow: hidden;">
+                            <div style="height: 100%; width: ${Math.min(percent, 100)}%; background: ${results[index].color};"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            scoresHtml += '</div>';
+            
+            resultContent.innerHTML = `
+                <div style="text-align: center;">
+                    <div style="font-size: 3em; margin: 20px 0; color: ${finalResult.color}">
+                        ${personalityType === 0 ? '🔥' : personalityType === 1 ? '🌞' : personalityType === 2 ? '🏔️' : '🌙'}
+                    </div>
+                    <h2 style="color: ${finalResult.color}; font-size: 2.2em; margin: 20px 0;">${finalResult.title}</h2>
+                    <p style="font-size: 1.2em; line-height: 1.6; color: #555; text-align: center; margin-bottom: 30px;">
+                        ${finalResult.description}
+                    </p>
+                    <div style="background: #f9f9f9; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                        <p><strong>Сильные стороны:</strong> ${finalResult.strengths}</p>
+                        <p><strong>Зоны роста:</strong> ${finalResult.weaknesses}</p>
+                    </div>
+                    ${scoresHtml}
+                    <div id="reward-advice" class="reward-advice hidden"></div>
+                    <div class="ad-notice">
+                        Спасибо, что прошли тест! Реклама помогает приложению развиваться.
+                    </div>
+                </div>
+            `;
+
+            void prepareRewardedAd();
+        }
+
+        async function prepareRewardedAd() {
+            rewardBtn.classList.add('hidden');
+            rewardBtn.disabled = true;
+            rewardStatus.classList.add('hidden');
+            rewardStatus.textContent = '';
+
+            if (!isPlatformApp) {
+                return;
+            }
+
+            const isAvailable = await checkNativeAdAvailability('reward');
+            if (!resultScreen.classList.contains('active') || !finalResult) {
+                return;
+            }
+
+            rewardBtn.classList.remove('hidden');
+            rewardBtn.disabled = !isAvailable;
+            rewardBtn.textContent = isAvailable
+                ? '🎁 Посмотреть рекламу и получить персональный совет'
+                : '🎁 Персональный совет — реклама пока недоступна';
+
+            if (!isAvailable) {
+                rewardStatus.textContent = 'Можно попробовать ещё раз немного позже.';
+                rewardStatus.classList.remove('hidden');
+            }
+        }
+
+        async function showRewardedAdvice() {
+            if (!finalResult || rewardBtn.disabled) {
+                return;
+            }
+
+            rewardBtn.disabled = true;
+            rewardStatus.textContent = 'Загружаем рекламу…';
+            rewardStatus.classList.remove('hidden');
+
+            const wasCompleted = await showNativeAd('reward');
+            if (!wasCompleted) {
+                rewardBtn.disabled = false;
+                rewardStatus.textContent = 'Реклама не была показана или не досмотрена. Попробуйте ещё раз позже.';
+                return;
+            }
+
+            const adviceElement = document.getElementById('reward-advice');
+            if (adviceElement) {
+                adviceElement.innerHTML = `<strong>Ваш персональный совет:</strong><br>${finalResult.advice}`;
+                adviceElement.classList.remove('hidden');
+            }
+
+            rewardBtn.classList.add('hidden');
+            rewardStatus.textContent = 'Готово — спасибо за просмотр!';
+            resultContent.scrollTop = resultContent.scrollHeight;
+        }
+
+        function getPersonalityType() {
+            let maxScore = 0;
+            let type = 0;
+            for (let i = 0; i < scores.length; i++) {
+                if (scores[i] > maxScore) {
+                    maxScore = scores[i];
+                    type = i;
+                }
+            }
+            return type;
+        }
+
+        function restartTest() {
+            showScreen(menuScreen);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            showScreen(menuScreen);
+        });
+    </script>
+</body>
+</html>
+
